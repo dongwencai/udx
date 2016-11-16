@@ -1,0 +1,6 @@
+<Document>
+    <Element attributeA = "valueA">
+        <Child attributeB = "value1" />
+        <Child attributeB = "value2" />
+    </Element>
+<Document>
