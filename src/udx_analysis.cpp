@@ -33,7 +33,15 @@
 #define FALSE 0
 #endif
 
+#define UDXREANAME "reason"
+#define UDXRESNAME "result"
+#define UDXREQNAME "Request"
+#define UDXRESPNAME "Response"
+#define UDXCMDNAME "cmd"
+#define UDXSEQNAME "seq"
+
 #define TABLESIZE(tab) (sizeof(tab) / sizeof(tab[0]))
+#define UDX_TEMP_FILE "/tmp/udx_msg.xml"
 
 typedef struct {
     char *keyword;
@@ -44,12 +52,21 @@ typedef struct {
 struct udx_msg{
     int seq;
     char mixerID[64];
+    char result[16];
+    char reason[64];
     union{
-
         struct{
-            char result[16];
-            char reason[64];
-        }return_status;
+            char expires[8];
+            int  retryTimes;
+            struct{
+               int maxSplitNum;
+               int splitMode;
+                char *videoResolution[16];
+                int videoFrameRate;
+                char videoEncodeType[8];
+                char AudioEncodeType[8];
+            }mixer_nfo;
+        }mixer_register;
 
         struct{
            int mode; 
@@ -171,7 +188,7 @@ struct udx_msg{
             }dst[0];
         }video_mix_set;
     };
-};
+}udx_param;
 
 /*
 <注册> 交换->拼接器 
@@ -188,8 +205,8 @@ struct return_status{
 
 udx_keyword_ctx_t return_status_keyword_ctx[] = {
     {"MixerID", "%s", offsetof(struct udx_msg, mixerID)},
-    {"result", "%s", offsetof(struct udx_msg, return_status.result)},
-    {"reasion", "%s", offsetof(struct udx_msg, return_status.reason)},
+    {"result", "%s", offsetof(struct udx_msg, result)},
+    {"reasion", "%s", offsetof(struct udx_msg,reason)},
 };
 
 /*
@@ -210,7 +227,7 @@ struct split_screen{
 
 
 udx_keyword_ctx_t split_screen_keyword_ctx[] = {
-    {"mode", "%d", offsetof(struct udx_msg, split_screen.mode)},
+    {"Mode", "%d", offsetof(struct udx_msg, split_screen.mode)},
 };
 
 /*
@@ -223,8 +240,8 @@ struct switch_video{
 */
 
 udx_keyword_ctx_t switch_video_keyword_ctx[] = {
-    {"sourceindex", "%d", offsetof(struct udx_msg, switch_video.sourceIndex)},
-    {"destindex", "%d", offsetof(struct udx_msg, switch_video.destIndex)},
+    {"SourceIndex", "%d", offsetof(struct udx_msg, switch_video.sourceIndex)},
+    {"DestIndex", "%d", offsetof(struct udx_msg, switch_video.destIndex)},
 };
 
 /*
@@ -237,8 +254,8 @@ struct full_screen{
 */
 
 udx_keyword_ctx_t full_screen_keyword_ctx[] = {
-    {"index", "%d", offsetof(struct udx_msg, full_screen.index)},
-    {"fullscreenstate", "%d", offsetof(struct udx_msg, full_screen.fullScreenState)},
+    {"Index", "%d", offsetof(struct udx_msg, full_screen.index)},
+    {"FullScreenState", "%d", offsetof(struct udx_msg, full_screen.fullScreenState)},
 };
 /* 
 <单屏暂停,恢复> <交换->拼接器> 返回return_status
@@ -251,12 +268,12 @@ struct play_state{
 */
 
 udx_keyword_ctx_t chn_play_state_keyword_ctx[] = {
-    {"index", "%d", offsetof(struct udx_msg, chn_play_state.index)},
-    {"playstate", "%d", offsetof(struct udx_msg, chn_play_state.playState)},
+    {"Index", "%d", offsetof(struct udx_msg, chn_play_state.index)},
+    {"PlayState", "%d", offsetof(struct udx_msg, chn_play_state.playState)},
 };
 
 udx_keyword_ctx_t  play_state_keyword_ctx[] = {
-    {"playstate", "%d", offsetof(struct udx_msg, play_state.playState)},
+    {"PlayState", "%d", offsetof(struct udx_msg, play_state.playState)},
 };
 
 /* 
@@ -270,9 +287,9 @@ struct dev_audio_state{
 */
 
 udx_keyword_ctx_t chn_audio_state_keyword_ctx[] = {
-    {"index", "%d", offsetof(struct udx_msg, chn_audio_state.index)},
-    {"audiostate", "%d", offsetof(struct udx_msg, chn_audio_state.audioState)},
-    {"volume", "%d", offsetof(struct udx_msg, chn_audio_state.volume)},
+    {"Index", "%d", offsetof(struct udx_msg, chn_audio_state.index)},
+    {"AudioState", "%d", offsetof(struct udx_msg, chn_audio_state.audioState)},
+    {"Volume", "%d", offsetof(struct udx_msg, chn_audio_state.volume)},
 };
 
 /* 
@@ -285,8 +302,8 @@ struct audio_status{
 */
 
 udx_keyword_ctx_t audio_state_keyword_ctx[] = {
-    {"audiostate", "%d", offsetof(struct udx_msg, audio_state.audioState)},
-    {"volume", "%d", offsetof(struct udx_msg, audio_state.volume)},
+    {"Audiostate", "%d", offsetof(struct udx_msg, audio_state.audioState)},
+    {"Volume", "%d", offsetof(struct udx_msg, audio_state.volume)},
 };
 
 /* 
@@ -316,15 +333,15 @@ struct osd{
 */
 
 udx_keyword_ctx_t osd_keyword_ctx[] = {
-    {"index", "%d", offsetof(struct udx_msg, osd.index)},
-    {"show", "%d", offsetof(struct udx_msg, osd.show)},
-    {"left", "%d", offsetof(struct udx_msg, osd.left)},
-    {"top", "%d", offsetof(struct udx_msg, osd.top)},
-    {"width", "%d", offsetof(struct udx_msg, osd.width)},
-    {"height", "%d", offsetof(struct udx_msg, osd.height)},
-    {"color", "%d", offsetof(struct udx_msg, osd.color)},
-    {"fontsize", "%d", offsetof(struct udx_msg, osd.fontSize)},
-    {"text", "%s", offsetof(struct udx_msg, osd.text)},
+    {"Index", "%d", offsetof(struct udx_msg, osd.index)},
+    {"Show", "%d", offsetof(struct udx_msg, osd.show)},
+    {"Left", "%d", offsetof(struct udx_msg, osd.left)},
+    {"Top", "%d", offsetof(struct udx_msg, osd.top)},
+    {"Width", "%d", offsetof(struct udx_msg, osd.width)},
+    {"Height", "%d", offsetof(struct udx_msg, osd.height)},
+    {"Color", "%d", offsetof(struct udx_msg, osd.color)},
+    {"Fontsize", "%d", offsetof(struct udx_msg, osd.fontSize)},
+    {"Text", "%s", offsetof(struct udx_msg, osd.text)},
 
 };
 
@@ -350,14 +367,14 @@ struct encode_param{
 
 udx_keyword_ctx_t encode_param_keyword_ctx[] = {
     {"MixerID", "%s", offsetof(struct udx_msg, mixerID)},
-    {"width@video", "%d", offsetof(struct udx_msg, encode_param.video.width)},
-    {"height@video", "%d", offsetof(struct udx_msg, encode_param.video.height)},
-    {"framerate@video", "%d", offsetof(struct udx_msg, encode_param.video.frameRate)},
-    {"encoderate@video", "%d", offsetof(struct udx_msg, encode_param.video.encodeRate)},
-    {"encodetype@video", "%d", offsetof(struct udx_msg, encode_param.video.encodeType)},
-    {"channels@audio", "%d", offsetof(struct udx_msg, encode_param.audio.channels)},
-    {"samplesrate@audio", "%d", offsetof(struct udx_msg, encode_param.audio.samplesRate)},
-    {"encodetype@audio", "%d", offsetof(struct udx_msg, encode_param.audio.encodeType)},
+    {"Width@Video", "%d", offsetof(struct udx_msg, encode_param.video.width)},
+    {"Height@Video", "%d", offsetof(struct udx_msg, encode_param.video.height)},
+    {"FrameRate@Video", "%d", offsetof(struct udx_msg, encode_param.video.frameRate)},
+    {"Encoderate@Video", "%d", offsetof(struct udx_msg, encode_param.video.encodeRate)},
+    {"Encodetype@Video", "%d", offsetof(struct udx_msg, encode_param.video.encodeType)},
+    {"Channels@Audio", "%d", offsetof(struct udx_msg, encode_param.audio.channels)},
+    {"SamplesRate@Audio", "%d", offsetof(struct udx_msg, encode_param.audio.samplesRate)},
+    {"EncodeType@Audio", "%d", offsetof(struct udx_msg, encode_param.audio.encodeType)},
 };
 
 /* 
@@ -370,13 +387,13 @@ struct video_resolution{
 */
 
 udx_keyword_ctx_t video_resolution_keyword_ctx[] = {
-    {"width", "%d", offsetof(struct udx_msg, encode_param.video.width)},
-    {"height", "%d", offsetof(struct udx_msg, encode_param.video.height)},
+    {"Width", "%d", offsetof(struct udx_msg, encode_param.video.width)},
+    {"Height", "%d", offsetof(struct udx_msg, encode_param.video.height)},
 };
 
 //<设置拼接器视频帧率> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t video_framerate_keyword_ctx[] = {
-    {"framerate", "%d", offsetof(struct udx_msg, encode_param.video.frameRate)},
+    {"FrameRate", "%d", offsetof(struct udx_msg, encode_param.video.frameRate)},
 };
 
 /* 
@@ -388,47 +405,49 @@ struct bitrate{
 */
 
 udx_keyword_ctx_t bitrate_keyword_ctx[] = {
-    {"bitrate", "%d", offsetof(struct udx_msg, encode_param.video.encodeRate)},
+    {"BitRate", "%d", offsetof(struct udx_msg, encode_param.video.encodeRate)},
 };
 
 //<设置拼接器音频声道数> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t audio_channels_keyword_ctx[] = {
-    {"channels", "%d", offsetof(struct udx_msg, encode_param.audio.channels)},
+    {"Channels", "%d", offsetof(struct udx_msg, encode_param.audio.channels)},
 };
 
 //<设置拼接器音频采样率> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t audio_samplesrate_keyword_ctx[] = {
-    {"samplesrate", "%d", offsetof(struct udx_msg, encode_param.audio.samplesRate)},
+    {"SamplesRate", "%d", offsetof(struct udx_msg, encode_param.audio.samplesRate)},
 };
 
 //<设置拼接器音频编码方式> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t audio_encodetype_keyword_ctx[] = {
-    {"encodetype", "%d", offsetof(struct udx_msg, encode_param.audio.encodeType)},
+    {"EncodeType", "%d", offsetof(struct udx_msg, encode_param.audio.encodeType)},
 };
  
 //<设置拼接器视频编码方式> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t video_encodetype_keyword_ctx[] = {
-    {"encodetype", "%d", offsetof(struct udx_msg, encode_param.video.encodeType)},
+    {"EncodeType", "%d", offsetof(struct udx_msg, encode_param.video.encodeType)},
 };
 
 //<单路点播> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t chn_av_play_keyword_ctx[] = {
-    {"index", "%d", offsetof(struct udx_msg, av_play.index)},
-    {"devip", "%s", offsetof(struct udx_msg, av_play.devIP)},
-    {"devch", "%d", offsetof(struct udx_msg, av_play.devCH)},
-    {"streamtype", "%d", offsetof(struct udx_msg, av_play.streamType)},
-    {"audiostate", "%d", offsetof(struct udx_msg, av_play.audioState)},
-    {"volume", "%d", offsetof(struct udx_msg, av_play.volume)},
+    {"Index", "%d", offsetof(struct udx_msg, av_play.index)},
+    {"DevIDS", "%s", offsetof(struct udx_msg, mixerID)},
+    {"DevIP", "%s", offsetof(struct udx_msg, av_play.devIP)},
+    {"DevCH", "%d", offsetof(struct udx_msg, av_play.devCH)},
+    {"DevType", "%d", offsetof(struct udx_msg, av_stop_play.devType)},
+    {"StreamType", "%d", offsetof(struct udx_msg, av_play.streamType)},
+    {"AudioState", "%d", offsetof(struct udx_msg, av_play.audioState)},
+    {"Volume", "%d", offsetof(struct udx_msg, av_play.volume)},
 };
 
 //<单路停止点播> <交换->拼接器> 返回return_status
 udx_keyword_ctx_t chn_av_stop_play_keyword_ctx[] = {
-    {"index", "%d", offsetof(struct udx_msg, av_stop_play.index)},
-    {"devip", "%s", offsetof(struct udx_msg, av_stop_play.devIP)},
-    {"devch", "%d", offsetof(struct udx_msg, av_stop_play.devCH)},
-    {"streamtype", "%d", offsetof(struct udx_msg, av_stop_play.streamType)},
-    {"audiostate", "%d", offsetof(struct udx_msg, av_stop_play.audioState)},
-    {"volume", "%d", offsetof(struct udx_msg, av_stop_play.volume)},
+    {"Index", "%d", offsetof(struct udx_msg, av_stop_play.index)},
+    {"DevIDS", "%s", offsetof(struct udx_msg, mixerID)},
+    {"DevIP", "%s", offsetof(struct udx_msg, av_stop_play.devIP)},
+    {"DevCH", "%d", offsetof(struct udx_msg, av_stop_play.devCH)},
+    {"DevType", "%d", offsetof(struct udx_msg, av_stop_play.devType)},
+    {"StreamType", "%d", offsetof(struct udx_msg, av_stop_play.streamType)},
 };
 
 //<停止全部点播> <交换->拼接器> 返回return_status
@@ -546,7 +565,7 @@ static int udx_cmd_item_cmp(const void *src, const void *dst)
 {
    const struct udx_cmd *pSrc = src; 
    const struct udx_cmd *pDst = dst; 
-   return pSrc->index - pDst->index;
+   return strcmp(pSrc->udx_cmd_str, pDst->udx_cmd_str);
 }
 
 int udx_anlysis_init()
@@ -573,15 +592,87 @@ static int udx_ctx_item_get(char *command, struct udx_ctx **out_data)
         *out_data = &udx_ctx_info[p->index];
         return p->index;
     }
+    *out_data = NULL;
     return -1;
 }
 
-static int _udx_xml_depacked(struct udx_msg *msg_ctx, struct udx_ctx *udx_item)
+static int _udx_xml_packed(struct udx_ctx *udx_item)
+{
+    
+    TiXmlDocument doc;  
+    TiXmlElement * root ;
+    if(udx_param.seq >= 0)
+    {
+        root = new TiXmlElement( UDXRESPNAME );  
+        root->SetAttribute(UDXREQNAME, udx_item->cmd_str);
+        root->SetAttribute(UDXSEQNAME, udx_param.seq);
+        root->SetAttribute(UDXRESNAME, udx_param.result);
+        root->SetAttribute(UDXREANAME, udx_param.reason);
+        doc.LinkEndChild( root );  
+    }
+  
+    doc.Print();
+    return 0;
+
+}
+
+static char *strrtok(const char *str, const char *delim)
+{
+    static char buf[4096];
+    static int pos = 0;
+    if(str)
+    {
+        strcpy(buf, str);
+        pos = strlen(str) + 1;
+    }
+    while(pos >= 0)
+    {
+       if(strstr(&buf[pos], delim)) 
+       {
+           memset(&buf[pos], '\0', strlen(delim)); 
+           pos += strlen(delim);
+           break;
+       }
+       pos --;
+       if(pos <= 0)
+           break;
+    }
+    if(pos >= 0 && buf[pos] != '\0')
+        return &buf[pos];
+    return NULL;
+}
+
+TiXmlElement *_udx_xml_element(char *path, TiXmlElement *root)
+{
+    char *token, *str;
+    TiXmlElement *elem = root;
+    for(str = path; token = strrtok(str, "@"); str = NULL)
+    {
+        char elem_name[64];
+        sscanf(token, "%[^[]", elem_name);
+        elem = elem->FirstChildElement(elem_name); 
+    }
+    return elem;
+}
+
+static int _udx_xml_depacked( struct udx_ctx *udx_item, TiXmlElement *root)
 {
     int i;
+    udx_keyword_ctx_t *key_tab;
+    key_tab = udx_item->recv_keyword_ctx_tab;
     for(i = 0; i < udx_item->tab_num; i ++)
     {
-    
+        char keyword[64];
+        TiXmlElement *elem;
+        char *value = NULL;
+        elem = _udx_xml_element(key_tab[i].keyword, root);
+        sscanf(key_tab[i].keyword, "%[^[@]", keyword); 
+        value = elem->GetText();
+        if(value)
+        {
+            char *addr = (char *)&udx_param + key_tab[i].member_ofset;
+            sscanf(value, key_tab[i].fmt, addr);
+        }
     }
 }
 
@@ -589,7 +680,31 @@ void udx_xml_depacked(char *xml_cmd)
 {
     struct udx_ctx *udx_ctx_item;
     struct udx_msg msg_ctx;
-    char cmd[64];
+    char cmd[64] = {0};
+    TiXmlDocument doc;
+    bool loadOkay = doc.LoadFile(UDX_TEMP_FILE);
+    TiXmlElement *root = doc.RootElement();
+    if(loadOkay)
+    {
+        doc.Print();
+    }
+    else
+    {
+        printf("xml error\n");
+    }
+    if(strcmp(UDXREQNAME, root->Value()) == 0)
+    {
+        strcpy(cmd, root->Attribute(UDXCMDNAME));
+        udx_param.seq = atoi( root->Attribute(UDXSEQNAME));
+        if(cmd[0] != '\0')
+        {
+            struct udx_ctx *uc;
+            udx_ctx_item_get(cmd, &uc);
+            _udx_xml_depacked(uc, root);
+            //printf("%d\t%s\t%s%d\t%d\t%d\t%d\t%d", udx_param.av_play.index, udx_param.mixerID, udx_param.av_play.devIP, udx_param.av_play.devCH, udx_param.av_play.devType, udx_param.av_play.streamType, udx_param.av_play.audioState, udx_param.av_play.volume);
+           // _udx_xml_packed(uc);
+        }
+    }
 }
 
 #ifdef DEBUG
@@ -647,18 +762,15 @@ int main(int argc, char *argv[])
     fclose(fp);
     printf("%s\n", udx_xml);
 
-    udx_xml_depacked(udx_xml);
-*/
-    TiXmlDocument doc;
-    bool loadOkay = doc.LoadFile("/mnt/aaa.xml");
-    if(loadOkay)
-    {
-        doc.Print();
-    }
-    else
-    {
-        printf("open %s error\n", argv[1]);
-    }
+    */
+    char *str, *src ;
+    for(src = "hello@world@china"; str = strrtok(src, "@"); src = NULL)
+        printf("%s\n", str);
+    for(src = "hello1#world1#china1"; str = strrtok(src, "#"); src = NULL)
+        printf("%s\n", str);
+ udx_anlysis_init();
+    udx_xml_depacked(NULL);
+
     write_app_settings_doc();   
 }
 #endif
