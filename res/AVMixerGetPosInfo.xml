@@ -1,0 +1,7 @@
+<Request cmd="AVMixerGetPosInfo" seq="12">
+  <MixerIDS>Ph00000000000170</MixerIDS>
+  <xPos>20</xPos>
+  <yPos>50</yPos>
+  <nFocus>0</nFocus>
+  <CaseID>xxxx</CaseID>
+</Request>

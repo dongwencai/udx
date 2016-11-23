@@ -1,0 +1,4 @@
+<Request cmd="AVMixerSwitchVideo" seq="1">
+  <SourceIndex>1</SourceIndex>
+  <DestIndex>1</DestIndex>
+</Request>

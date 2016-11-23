@@ -1,0 +1,21 @@
+<Request cmd="AVMixerTest" seq="1" result="success" reason="">
+  <MixerID>123</MixerID>
+  <Src>
+    <PosID>1</PosID>
+    <PosID>2</PosID>
+    <PosID>3</PosID>
+  </Src>
+  <Src>
+    <PosID>4</PosID>
+    <PosID>5</PosID>
+    <PosID>6</PosID>
+  </Src>
+  <Src>
+    <PosID>7</PosID>
+    <PosID>8</PosID>
+    <PosID>9</PosID>
+  </Src>
+  <Dst>
+    <PosID>4</PosID>
+  </Dst>
+</Request>

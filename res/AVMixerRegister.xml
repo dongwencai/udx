@@ -1,0 +1,13 @@
+<Request cmd="AVMixerRegister" seq="1">
+<Expires>5s</Expires>
+<RetryTimes>3</RetryTimes>
+<MixerInfo>
+            <IDS>xxxxxxxx</IDS>
+<MaxSplitNum>16</MaxSplitNum>
+<SplitMode>1</SplitMode>
+            <VideoResolution>1920*1080</VideoResolution>
+         <VideoFrameRate>60</VideoFrameRate>
+         <VideoEncodeType>H.264</VideoEncodeType>
+     <AudioEncodeType>G.711U</AudioEncodeType>
+  </MixerInfo>
+</Request>

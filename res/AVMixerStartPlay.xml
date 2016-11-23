@@ -1,0 +1,10 @@
+<Request cmd="AVMixerStartPlay" seq="1">
+  <Index>1</Index>
+  <DevIDS>xxxxxxxx</DevIDS>
+  <DevIP>xx.xx.xx.xx</DevIP>
+  <DevCH>1</DevCH>
+  <DevType>9</DevType>
+  <StreamType>0</StreamType>
+  <AudioState>1</AudioState>
+  <Volume>255</Volume>
+</Request>

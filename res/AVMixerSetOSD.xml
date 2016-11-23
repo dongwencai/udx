@@ -1,0 +1,45 @@
+<Request cmd="AVMixerSetOSD" seq="12">
+  <Index>1</Index>  
+  <DevIDS>2</DevIDS>
+  <DevCH>xx</DevCH>
+  <Show>1</Show>
+
+  <OSDInfoList>
+  <OSDInfo>
+    <Left>0.1</Left>
+    <Top>0.1</Top>
+    <Color>255</Color>
+    <FontName>宋体</FontName>
+    <FontSize>0.08</FontSize>
+    <Text>dsadasdasterwt</Text>
+  </OSDInfo>
+
+  <OSDInfo>
+    <Left>0.2</Left>
+    <Top>0.2</Top>
+    <Color>255</Color>
+    <FontName>宋体</FontName>
+    <FontSize>0.09</FontSize>
+    <Text>dsadasdasterwt</Text>
+  </OSDInfo>
+
+  <OSDInfo>
+    <Left>0.3</Left>
+    <Top>0.3</Top>
+    <Color>255</Color>
+    <FontName>宋体</FontName>
+    <FontSize>0.09</FontSize>
+    <Text>dsadasdasterwt</Text>
+  </OSDInfo>
+
+  <OSDInfo>
+    <Left>0.4</Left>
+    <Top>0.4</Top>
+    <Color>255</Color>
+    <FontName>宋体</FontName>
+    <FontSize>0.09</FontSize>
+    <Text>dsadasdasterwt</Text>
+  </OSDInfo>
+</OSDInfoList>
+ 
+</Request>

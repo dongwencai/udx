@@ -1,0 +1,15 @@
+<Request cmd="AVMixerSetEncodeParam" seq="13">
+  <MixerIDS>XTTEST1100000097</MixerIDS>
+  <Video>
+    <Width>1920</Width>
+    <Height>1080</Height>
+    <FrameRate>30</FrameRate>
+    <EncodeRate>2048</EncodeRate>
+    <EncodeType>0</EncodeType>
+  </Video>
+  <Audio>
+    <Channels>1</Channels>
+<SamplesRate>8000</SamplesRate>
+<EncodeType>0</EncodeType>
+  </Audio>
+</Request>

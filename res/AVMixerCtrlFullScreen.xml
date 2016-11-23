@@ -1,0 +1,4 @@
+<Request cmd="AVMixerCtrlFullScreen" seq="1">
+  <Index>1</Index>
+  <FullScreenState>1</FullScreenState>
+</Request>
